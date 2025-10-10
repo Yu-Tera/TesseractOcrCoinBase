@@ -1,0 +1,37 @@
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+*.pdb
+*.obj
+*.exe
+*.dll
+*.db
+*.bak
+*.ncb
+*.aps
+*.idb
+*.ipch
+*.opensdf
+*.sdf
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+
+## Build results
+[Bb]in/
+[Oo]bj/
+*.Build.cs
+
+## NuGet
+*.nupkg
+packages/
+*.snupkg
+
+## Others
+*.DS_Store
+*.swp
+*.tmp
+*.log
