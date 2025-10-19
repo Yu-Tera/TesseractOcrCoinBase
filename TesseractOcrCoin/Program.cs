@@ -14,7 +14,7 @@ class Program
 {
     static void Main()
     {
-        string imageFolder = @"C:\Users\Yu-DESK\Videos\NVIDIA\Delta Force"; // 画像フォルダ
+        string imageFolder = @".\ScreenShot"; // 画像フォルダ
         string tessdataPath = @"C:\Program Files\Tesseract-OCR\tessdata"; // tessdataのパス
 
 
