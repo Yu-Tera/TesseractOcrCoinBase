@@ -14,7 +14,7 @@ class Program
 {
     static void Main()
     {
-        string imageFolder = @".\ScreenShot"; // 画像フォルダ
+        string imageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "ScreenShot");
         string tessdataPath = @"C:\Program Files\Tesseract-OCR\tessdata"; // tessdataのパス
 
 
