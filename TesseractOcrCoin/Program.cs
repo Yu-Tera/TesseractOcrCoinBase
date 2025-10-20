@@ -109,7 +109,7 @@ class Program
                             coinRect.X + coinRect.Width,
                             coinRect.Y,
                             slice.Width - (coinRect.X + coinRect.Width),
-                            30
+                            25//高さ
                         );
 
                         if (numberRect.X < 0 || numberRect.Y < 0 || numberRect.X + numberRect.Width > slice.Width || numberRect.Y + numberRect.Height > slice.Height)
@@ -128,8 +128,8 @@ class Program
                         // 数字が検出された場合のみ名前を検索
                         if (!string.IsNullOrWhiteSpace(numberText) && numberText != "(なし)" && numberText != "(空画像)")
                         {
-                            int nameY = coinRect.Y + 30 - 155;//上下位置
-                            var nameRect = new Rect(0, nameY, 260, 30);
+                            int nameY = coinRect.Y + 32 - 155;//上下位置
+                            var nameRect = new Rect(10, nameY, 260, 30);
                             if (nameRect.X < 0 || nameRect.Y < 0 || nameRect.X + nameRect.Width > slice.Width || nameRect.Y + nameRect.Height > slice.Height)
                                 continue;
 
@@ -184,15 +184,38 @@ class Program
         Cv2.CvtColor(cropped, cropped, ColorConversionCodes.BGR2GRAY);
 
         // 🔸 文字を認識するため拡大
-        Cv2.Resize(cropped, cropped, new OpenCvSharp.Size(cropped.Width * 2.8, cropped.Height * 2.8), interpolation: InterpolationFlags.Linear);
+        Cv2.Resize(cropped, cropped, new OpenCvSharp.Size(cropped.Width * 5, cropped.Height * 5), interpolation: InterpolationFlags.Linear);
 
 
+        // 反転処理（白文字 → 黒文字に）
+        Cv2.BitwiseNot(cropped, cropped);
+
+
+        //白黒化
+        Cv2.Threshold(cropped, cropped, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
+
+        //ぼかし(ノイズ除去)
         Cv2.GaussianBlur(cropped, cropped, new OpenCvSharp.Size(3, 3), 0);
 
-        Cv2.Threshold(cropped, cropped, 0, 255, ThresholdTypes.Otsu);
+        // にじみ除去
+        var kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(2, 2));
+        Cv2.MorphologyEx(cropped, cropped, MorphTypes.Open, kernel); 
+
 
         // Mat → Bitmap に変換
-        using var bitmap = BitmapConverter.ToBitmap(cropped);
+        using var bitmap = BitmapConverter.ToBitmap(cropped);　　
+
+
+        
+        //処理済み画像可視化
+        //string debugFolder = @"OCRDebug";
+        //Directory.CreateDirectory(debugFolder); 
+
+        //string debugPath = Path.Combine(debugFolder, $"ocr_input_{DateTime.Now:yyyyMMdd_HHmmssfff}.png");
+        //Cv2.ImWrite(debugPath, cropped);
+        //Console.WriteLine($"OCR前処理画像を保存しました: {debugPath}");
+
+
 
         // Bitmap → MemoryStream → byte[] → Pix に変換
         using var ms = new MemoryStream();
@@ -201,7 +224,7 @@ class Program
         using var pix = Pix.LoadFromMemory(ms.ToArray());
 
         // OCRエンジンで読み取り
-        using var engine = new TesseractEngine(tessdataPath, "jpn+eng", EngineMode.Default);
+        using var engine = new TesseractEngine(tessdataPath, "jpn", EngineMode.Default);
         using var page = engine.Process(pix);
 
 
@@ -227,8 +250,19 @@ class Program
         }
 
         Cv2.CvtColor(cropped, cropped, ColorConversionCodes.BGR2GRAY);
+        Cv2.Resize(cropped, cropped, new OpenCvSharp.Size(cropped.Width * 5, cropped.Height * 5), interpolation: InterpolationFlags.Linear);
         Cv2.GaussianBlur(cropped, cropped, new OpenCvSharp.Size(3, 3), 0);
         Cv2.Threshold(cropped, cropped, 0, 255, ThresholdTypes.Otsu);
+        // 反転処理（白文字 → 黒文字に）
+        Cv2.BitwiseNot(cropped, cropped);
+
+        //処理済み画像可視化
+        //string debugFolder = @"OCRDebug";
+        //Directory.CreateDirectory(debugFolder);
+
+        //string debugPath = Path.Combine(debugFolder, $"ocr_input_{DateTime.Now:yyyyMMdd_HHmmssfff}.png");
+        //Cv2.ImWrite(debugPath, cropped);
+        ////Console.WriteLine($"OCR前処理画像を保存しました: {debugPath}");
 
         using var bitmap = BitmapConverter.ToBitmap(cropped);
         using var ms = new MemoryStream();
