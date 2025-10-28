@@ -1,21 +1,32 @@
-﻿using System;
-using System.IO;
-using OpenCvSharp;
-using Tesseract;
-using System.Drawing;
+﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
-
-
-using Rect = OpenCvSharp.Rect;
+using System;
+using System.Drawing;
+using System.IO;
+using Tesseract;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using CvPoint = OpenCvSharp.Point;
+using Rect = OpenCvSharp.Rect;
 
 
 class Program
 {
     static void Main()
     {
+        
         string imageFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "ScreenShot");
         string tessdataPath = @"C:\Program Files\Tesseract-OCR\tessdata"; // tessdataのパス
+        string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "OutputFolder");
+        Directory.CreateDirectory(folderPath);
+        string filePath = Path.Combine(folderPath, "textFile.txt");
+
+        // 実行時に既存ファイルを削除して新しく作成（ループの前で1回だけ）
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+        File.WriteAllText(filePath, "");
 
 
         foreach (var file in Directory.GetFiles(imageFolder, "*.png"))
@@ -136,6 +147,12 @@ class Program
                             string nameText = RunTesseract(slice, nameRect, tessdataPath);
 
                             Console.WriteLine($"数字: {numberText}, 名前: {nameText}");
+
+
+
+                            File.AppendAllText(filePath, $"数字: {numberText}, 左上文字: {nameText}\n");
+
+
 
                             Cv2.Rectangle(slice, coinRect, Scalar.Green, 2);
                             Cv2.Rectangle(slice, numberRect, Scalar.Red, 2);
